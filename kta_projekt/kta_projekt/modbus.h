@@ -1,18 +1,20 @@
-﻿/*
- * modbus.h
- *
- * Created: 12.04.2024 19:32:48
- *  Author: Tomáš
- */ 
-
-
-#ifndef MODBUS_H_
+﻿#ifndef MODBUS_H_
 #define MODBUS_H_
 
-void modbus_init(void);
-uint16_t modbus_read_register(uint16_t register_address);
-void modbus_write_register(uint16_t register_address, uint16_t value);
-void modbus_process(void);
+#include <avr/io.h>
+#include <stdint.h>
+
+#define NUM_HOLDING_REGISTERS 4
+
+extern uint16_t holdingRegisters[NUM_HOLDING_REGISTERS];  // Přidat extern
+
+
+void modbus_init(uint16_t speed, uint8_t parity, uint8_t stopBit);
+uint16_t computeCRC(const uint8_t* data, uint16_t length);
+void sendModbusException(uint8_t functionCode, uint8_t exceptionCode);
+void handleReadHoldingRegisters(uint16_t startAddress, uint16_t numRegisters);
+void sendModbusResponse(uint8_t* data, uint16_t length);
+void sendReadRegistersResponse(uint16_t startAddress, uint16_t numRegisters);
 
 
 #endif /* MODBUS_H_ */
