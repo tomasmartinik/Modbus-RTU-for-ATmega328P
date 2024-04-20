@@ -143,6 +143,12 @@
     <Compile Include="modbus.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="sensor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="sensor.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="timer.c">
       <SubType>compile</SubType>
     </Compile>
