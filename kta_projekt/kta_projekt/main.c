@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "UART.h"
 #include "sensor.h"
+#include "ADC.h"
 
 #define TEMP_REGISTER      0  // Aktuální teplota
 #define UPPER_LIMIT        1  // Horní limit teploty
@@ -39,7 +40,8 @@ int main(void) {
 	
 		updateSystemState();
 		processIncomingRequests();
-		
+
+	
 		delay(1000000);
 
 		

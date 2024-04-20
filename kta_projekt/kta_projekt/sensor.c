@@ -6,6 +6,7 @@
  */ 
 #include "sensor.h"
 #include "modbus.h"
+#include "ADC.h"
 #include <stdlib.h>
 
 extern uint16_t holdingRegisters[NUM_HOLDING_REGISTERS];
@@ -60,7 +61,7 @@ uint8_t checkStatusBit(uint16_t bitMask) {
 
 void updateSystemState(void) {
 	// Simulace získání teploty
-	uint16_t currentTemperature = simulateTemperature();
+	uint16_t currentTemperature = get_temperature(0);
 
 	// Aktualizace teploty v registru
 	updateTemperature(currentTemperature);

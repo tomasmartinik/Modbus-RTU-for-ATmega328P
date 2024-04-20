@@ -27,6 +27,8 @@
 #define UPPER_TEMPERATURE_LIMIT 35
 #define LOWER_TEMPERATURE_LIMIT 5
 
+#define TEMP_CHANNEL 0
+
 void initializeHoldingRegisters(void);
 uint16_t simulateTemperature(void);
 void updateTemperature(uint16_t temperature);
