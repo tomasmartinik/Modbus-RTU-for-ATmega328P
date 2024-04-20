@@ -5,8 +5,26 @@
  */ 
 
 #include "UART.h"
+#include "timer.h"
 #include <avr/io.h>
 #include <stdio.h>
+#include <avr/interrupt.h>
+
+#define TIMEOUT_MICROSECONDS 1750  // 3.5 znakové intervaly při 9600 baud = 364 us; 1750 je bezpečná hodnota pro zahrnutí nějaké rezervy
+#define RX_BUFFER_SIZE 256
+
+volatile uint8_t rxBuffer[RX_BUFFER_SIZE];
+volatile uint16_t rxWritePos = 0;
+volatile uint16_t rxReadPos = 0;
+
+ISR(USART_RX_vect) {
+    uint8_t data = UDR0;  // Přečíst data z přijímacího registru
+    uint16_t nextPos = (rxWritePos + 1) % RX_BUFFER_SIZE;
+    if (nextPos != rxReadPos) {  // Zkontrolovat, zda buffer není plný
+        rxBuffer[rxWritePos] = data;
+        rxWritePos = nextPos;
+    }
+}
 
 // Setup stream to enable printf to use UART for output
 static FILE myuart = FDEV_SETUP_STREAM(usart_putchar_printf, NULL, _FDEV_SETUP_WRITE);
@@ -59,10 +77,12 @@ void UART_write(uint8_t ch)
 
 void UART_write_array(const uint8_t *data, size_t len)
 {
-    // Send array of data through UART
+    printf("UART Sending: ");
     for (size_t i = 0; i < len; i++) {
-        UART_write(data[i]);
+        printf("%02X ", data[i]);  // Zobrazí každý bajt v hexadecimálním formátu
+        UART_write(data[i]);       // Odešle bajt přes UART
     }
+    printf("\n");  // Nový řádek pro lepší přehlednost výstupu
 }
 
 int usart_putchar_printf(char c, FILE *stream)
@@ -72,4 +92,24 @@ int usart_putchar_printf(char c, FILE *stream)
     }
     UART_write(c);
     return 0;
+}
+int UART_read_frame(uint8_t *buffer, int buffer_length) {
+	int count = 0;
+	uint32_t last_byte_time = 0;
+	uint8_t byte;
+
+	while (count < buffer_length) {
+		if (UCSR0A & (1 << RXC0)) {
+			byte = UART_get();
+			buffer[count++] = byte;
+			last_byte_time = 0;
+			} else {
+			if (last_byte_time > TIMEOUT_MICROSECONDS) {
+				break;
+			}
+			delay(10);
+			last_byte_time += 10;
+		}
+	}
+	return count;
 }

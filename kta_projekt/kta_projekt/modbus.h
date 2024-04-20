@@ -15,6 +15,10 @@ void sendModbusException(uint8_t functionCode, uint8_t exceptionCode);
 void handleReadHoldingRegisters(uint16_t startAddress, uint16_t numRegisters);
 void sendModbusResponse(uint8_t* data, uint16_t length);
 void sendReadRegistersResponse(uint16_t startAddress, uint16_t numRegisters);
+void processIncomingRequests();
+void handleWriteSingleRegister(uint16_t registerAddress, uint16_t value);
+void sendWriteSingleRegisterResponse(uint16_t registerAddress, uint16_t value);
+
 
 
 #endif /* MODBUS_H_ */
