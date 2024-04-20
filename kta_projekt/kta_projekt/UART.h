@@ -14,4 +14,6 @@ void UART_write(uint8_t ch);     // Odešle jeden byte do USART
 void UART_write_array(const uint8_t *data, size_t len); // Odešle pole bytů do USART
 int usart_putchar_printf(char c, FILE *stream);         // Funkce pro podporu printf přes USART
 
+int UART_read_frame(uint8_t *buffer, int buffer_length);
+
 #endif // UART_H_

@@ -16,5 +16,7 @@ void handleReadHoldingRegisters(uint16_t startAddress, uint16_t numRegisters);
 void sendModbusResponse(uint8_t* data, uint16_t length);
 void sendReadRegistersResponse(uint16_t startAddress, uint16_t numRegisters);
 
+void processIncomingRequests();
+
 
 #endif /* MODBUS_H_ */

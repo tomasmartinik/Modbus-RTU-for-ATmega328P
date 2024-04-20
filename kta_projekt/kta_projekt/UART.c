@@ -5,8 +5,12 @@
  */ 
 
 #include "UART.h"
+#include "timer.h"
 #include <avr/io.h>
 #include <stdio.h>
+
+#define TIMEOUT_MICROSECONDS 1750  // 3.5 znakové intervaly při 9600 baud = 364 us; 1750 je bezpečná hodnota pro zahrnutí nějaké rezervy
+
 
 // Setup stream to enable printf to use UART for output
 static FILE myuart = FDEV_SETUP_STREAM(usart_putchar_printf, NULL, _FDEV_SETUP_WRITE);
@@ -72,4 +76,29 @@ int usart_putchar_printf(char c, FILE *stream)
     }
     UART_write(c);
     return 0;
+}
+
+int UART_read_frame(uint8_t *buffer, int buffer_length) {
+    int count = 0;
+    uint32_t last_byte_time = 0;
+    uint8_t byte;
+
+    while (count < buffer_length) {
+        if (UCSR0A & (1 << RXC0)) {
+            byte = UART_get();
+            buffer[count++] = byte;
+            last_byte_time = 0;  // Reset timer on received byte
+        } else {
+            if (last_byte_time > TIMEOUT_MICROSECONDS) {
+                if (count == 0) {  // If no data has been received, continue waiting
+                    last_byte_time = 0;
+                } else {
+                    break;  // If data has been received but not complete, stop reading
+                }
+            }
+            delay(10);
+            last_byte_time += 10;
+        }
+    }
+    return count;
 }

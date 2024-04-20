@@ -27,9 +27,11 @@ int main(void) {
 	while(1) {
 		// Simulace příchozí zprávy: Přečti registery od indexu 0, celkem 4 registry
 		//handleReadHoldingRegisters(0, 4);
+		
+		processIncomingRequests();
 
 		// Simulace chybného příchozího požadavku: Neplatná adresa
-		handleReadHoldingRegisters(5, 1);  // Tato adresa je mimo rozsah
+		//handleReadHoldingRegisters(5, 1);  // Tato adresa je mimo rozsah
 
 		// Simulace chybného příchozího požadavku: Neplatný počet registrů
 		//handleReadHoldingRegisters(2, 3);  // Tento požadavek přesahuje maximální počet registrů

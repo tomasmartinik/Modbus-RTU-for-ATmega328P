@@ -74,23 +74,76 @@ void sendModbusResponse(uint8_t* data, uint16_t length){
 
 
 void sendReadRegistersResponse(uint16_t startAddress, uint16_t numRegisters) {
-	uint8_t response[256];  // Předpokládáme dostatečně velký buffer
-	int index = 0;
+    uint8_t response[256];  // Buffer pro odpověď
+    int index = 0;
 
-	// Přidání Modbus RTU hlavičky a dat
-	response[index++] = 0x01;  // Adresa zařízení
-	response[index++] = 0x03;  // Funkční kód pro čtení holding registrů
-	response[index++] = numRegisters * 2;  // Počet bajtů následujících dat
+    // Sestavení hlavičky odpovědi
+    response[index++] = 0x01;  // Slave ID
+    response[index++] = 0x03;  // Funkční kód
+    response[index++] = numRegisters * 2;  // Počet bajtů dat
 
-	for (uint16_t i = startAddress; i < startAddress + numRegisters; i++) {
-		response[index++] = (holdingRegisters[i] >> 8) & 0xFF;  // Vyšší bajt hodnoty registru
-		response[index++] = holdingRegisters[i] & 0xFF;         // Nižší bajt hodnoty registru
-	}
+    // Přidání dat registru
+    for (uint16_t i = startAddress; i < startAddress + numRegisters; i++) {
+        response[index++] = (holdingRegisters[i] >> 8) & 0xFF;  // Vyšší bajt hodnoty registru
+        response[index++] = holdingRegisters[i] & 0xFF;         // Nižší bajt hodnoty registru
+    }
 
-	uint16_t crc = computeCRC(response, index);
-	response[index++] = crc & 0xFF;
-	response[index++] = (crc >> 8) & 0xFF;
+    // Výpočet CRC
+    uint16_t crc = computeCRC(response, index);
+    response[index++] = crc & 0xFF;
+    response[index++] = (crc >> 8) & 0xFF;
 
-	// Odeslání odpovědi
-	sendModbusResponse(response, index);
+    // Logování odesílané odpovědi
+    //printf("Sending response: ");
+    for (int i = 0; i < index; i++) {
+      //  printf("%02X ", response[i]);
+    }
+    //printf("\n");
+
+    // Odeslání odpovědi
+    UART_write_array(response, index);
+}
+
+
+
+void processIncomingRequests() {
+    uint8_t buffer[256];
+    int numBytes = UART_read_frame(buffer, 256);  // Čeká na příjem celého rámcového bufferu
+    uint16_t crc;
+    uint8_t slaveId, functionCode;
+
+    if (numBytes > 0) {
+        //printf("Received %d bytes.\n", numBytes);  // Zobrazit, kolik bajtů bylo přijato
+        crc = ((uint16_t)buffer[numBytes - 2]) | ((uint16_t)buffer[numBytes - 1] << 8);
+        
+        if (computeCRC(buffer, numBytes - 2) == crc) {
+            slaveId = buffer[0];
+            functionCode = buffer[1];
+            //printf("Slave ID: %02X, Function Code: %02X\n", slaveId, functionCode);  // Zobrazit ID a funkční kód
+
+            uint16_t startAddress, numRegisters, value;
+
+            switch (functionCode) {
+                case 0x03:  // Čtení holding registrů
+                    startAddress = (buffer[2] << 8) | buffer[3];
+                    numRegisters = (buffer[4] << 8) | buffer[5];
+                    //printf("Reading Holding Registers: Start Address: %u, Number of Registers: %u\n", startAddress, numRegisters);
+                    handleReadHoldingRegisters(startAddress, numRegisters);
+                    break;
+                case 0x06:  // Zápis jednoho registru
+                    startAddress = (buffer[2] << 8) | buffer[3];
+                    value = (buffer[4] << 8) | buffer[5];
+                    //printf("Writing Single Register: Address: %u, Value: %u\n", startAddress, value);
+                    //handleWriteSingleRegister(startAddress, value);
+                    break;
+                default:  // Neplatná funkce
+                    //printf("Invalid Function Code: %02X\n", functionCode);
+                    sendModbusException(slaveId, 1);
+                    break;
+            }
+        } else {
+            //printf("CRC Error: Calculated CRC: %04X, Expected CRC: %04X\n", computeCRC(buffer, numBytes - 2), crc);
+            sendModbusException(buffer[0], 3);  // Chyba CRC
+        }
+    }
 }
