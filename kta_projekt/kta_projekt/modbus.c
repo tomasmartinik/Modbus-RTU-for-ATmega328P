@@ -134,7 +134,7 @@ void processIncomingRequests() {
                     startAddress = (buffer[2] << 8) | buffer[3];
                     value = (buffer[4] << 8) | buffer[5];
                     //printf("Writing Single Register: Address: %u, Value: %u\n", startAddress, value);
-                    //handleWriteSingleRegister(startAddress, value);
+                    handleWriteSingleRegister(startAddress, value);
                     break;
                 default:  // Neplatná funkce
                     //printf("Invalid Function Code: %02X\n", functionCode);
@@ -146,4 +146,33 @@ void processIncomingRequests() {
             sendModbusException(buffer[0], 3);  // Chyba CRC
         }
     }
+}
+
+void sendWriteSingleRegisterResponse(uint16_t registerAddress, uint16_t value) {
+    uint8_t response[8];
+    int index = 0;
+
+    response[index++] = 0x01;  // Slave ID
+    response[index++] = 0x06;  // Funkční kód pro zápis jednoho registru
+    response[index++] = (registerAddress >> 8) & 0xFF;  // Vyšší byte adresy
+    response[index++] = registerAddress & 0xFF;  // Nižší byte adresy
+    response[index++] = (value >> 8) & 0xFF;  // Vyšší byte hodnoty
+    response[index++] = value & 0xFF;  // Nižší byte hodnoty
+
+    uint16_t crc = computeCRC(response, index);  // Vypočítat CRC
+    response[index++] = crc & 0xFF;  // Nižší byte CRC
+    response[index++] = (crc >> 8) & 0xFF;  // Vyšší byte CRC
+
+    UART_write_array(response, index);  // Odeslání odpovědi
+}
+
+
+void handleWriteSingleRegister(uint16_t registerAddress, uint16_t value) {
+	if (registerAddress >= NUM_HOLDING_REGISTERS) {
+		sendModbusException(0x06, 0x02);  // ILLEGAL DATA ADDRESS
+		return;
+	}
+
+	holdingRegisters[registerAddress] = value;  // Zápis hodnoty do registru
+	sendWriteSingleRegisterResponse(registerAddress, value);  // Odeslat potvrzení o zápisu
 }

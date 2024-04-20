@@ -18,5 +18,8 @@ void sendReadRegistersResponse(uint16_t startAddress, uint16_t numRegisters);
 
 void processIncomingRequests();
 
+void sendWriteSingleRegisterResponse(uint16_t registerAddress, uint16_t value);
+void handleWriteSingleRegister(uint16_t registerAddress, uint16_t value);
+
 
 #endif /* MODBUS_H_ */
