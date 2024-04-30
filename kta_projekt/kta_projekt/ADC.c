@@ -11,7 +11,7 @@
 const float T0 = 298.15;  // 25 stupnu v kelvinech
 const float B = 3895.0;   // B-koeficient termistoru
 const float R0 = 10000.0; // odpor termistoru pri T0
-const float VR1 = 20000.0; //odpor trimru
+int calibration = 20000.0; // Počáteční hodnota odporu trimru
 const float R3 = 1500.0; // odpor R3
 
 void adc_init(void){
@@ -35,7 +35,7 @@ float get_temperature(uint8_t channel){
 	uint16_t adc_value = adc_get_value(channel);
 	
 	float A0 = adc_value / 1024.0 * 5.0 ;	
-	float R = A0/(5.0 - A0)*VR1 - R3;	
+	float R = A0/(5.0 - A0)*calibration - R3;	
 	return (B/(log(R / R0) + B/T0)) - 273.15;	//teplota
 }
 

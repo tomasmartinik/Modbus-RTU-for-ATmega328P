@@ -15,6 +15,7 @@ void initializeHoldingRegisters(void) {
 	holdingRegisters[UPPER_LIMIT] = UPPER_TEMPERATURE_LIMIT;
 	holdingRegisters[LOWER_LIMIT] = LOWER_TEMPERATURE_LIMIT;
 	holdingRegisters[STATUS_WORD] = 0;  // Clear status word initially
+	holdingRegisters[TEMP_REGISTER] = 2;
 }
 
 uint16_t simulateTemperature(void) {
@@ -60,9 +61,9 @@ uint8_t checkStatusBit(uint16_t bitMask) {
 }
 
 void updateSystemState(void) {
-	// Simulace získání teploty
-	//uint16_t currentTemperature = get_temperature(1);
-	uint16_t currentTemperature = 20;
+	
+	uint16_t currentTemperature = get_temperature(1);
+	//uint16_t currentTemperature = (uint16_t)get_temperature(1);
 
 	// Aktualizace teploty v registru
 	updateTemperature(currentTemperature);

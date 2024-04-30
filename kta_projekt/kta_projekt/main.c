@@ -23,18 +23,13 @@
 #define LOWER_LIMIT_BIT    (1 << 3)
 
 int main(void) {
+	
 	// Inicializace Modbus komunikace
-	//UART_Init(9600, 0, 1);
 	modbus_init(9600, 0, 1);  // Nastaví baud rate na 9600, bez parity, 1 stop bit
-
-	// Předpokládejme, že máme holding registry již inicializované
-	//holdingRegisters[0] = 1;
-	//holdingRegisters[1] = 2;
-	//holdingRegisters[2] = 3;
-	//holdingRegisters[3] = 4;
-
+	adc_init();
 	timerInit();
 	initializeHoldingRegisters();
+	
 
 	while(1) {
 	
