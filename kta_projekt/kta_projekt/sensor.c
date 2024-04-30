@@ -61,7 +61,8 @@ uint8_t checkStatusBit(uint16_t bitMask) {
 
 void updateSystemState(void) {
 	// Simulace získání teploty
-	uint16_t currentTemperature = get_temperature(0);
+	//uint16_t currentTemperature = get_temperature(1);
+	uint16_t currentTemperature = 20;
 
 	// Aktualizace teploty v registru
 	updateTemperature(currentTemperature);

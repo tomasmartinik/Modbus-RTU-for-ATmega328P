@@ -24,7 +24,7 @@
 
 int main(void) {
 	// Inicializace Modbus komunikace
-	UART_Init(9600, 0, 1);
+	//UART_Init(9600, 0, 1);
 	modbus_init(9600, 0, 1);  // Nastaví baud rate na 9600, bez parity, 1 stop bit
 
 	// Předpokládejme, že máme holding registry již inicializované
